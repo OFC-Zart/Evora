@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Activity, Flame, TrendingUp } from "lucide-react";
 import {
+  addDays,
   FRACAO_LEVE,
   defaultSchedule,
   detectDecline,
@@ -35,7 +36,7 @@ interface StatsRow {
   athlete_id: AthleteId;
   nome: string;
   nivel: string;
-  plan_inicio: string;
+  plan_inicio: string | null;
   logs: WorkoutLog[];
   estimates: Estimate[];
   fechamentos: { semana: number; adesao: number }[];
@@ -78,7 +79,8 @@ export default async function Ranking() {
         nome: r.nome,
         plan: planA.length ? planA : seed.treinos,
         schedule: schedA.length ? schedA : defaultSchedule(),
-        plan_inicio: r.plan_inicio,
+        // plano não iniciado (nulo): começa amanhã, então nada conta ainda
+        plan_inicio: r.plan_inicio ?? addDays(s.hoje, 1),
         logs,
         estimates: r.estimates.filter((e) => e.fonte !== "projecao" || r.estimates.length > 1).map((e) => ({ ...e, vdot: Number(e.vdot) })),
         adesaoSemanas: r.fechamentos.map((f) => Number(f.adesao)),

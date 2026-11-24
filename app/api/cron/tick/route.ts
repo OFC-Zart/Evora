@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (!precisaDiario && !domingoNoite) continue;
 
     const s = await loadState(admin, athlete);
-    if (!s) continue;
+    if (!s || !s.planoIniciado) continue; // plano ainda não começou: sem lembrete nem fechamento
 
     if (precisaDiario) {
       await admin.from("profiles").update({ lembrete_diario_ultimo: hoje }).eq("athlete_id", athlete);

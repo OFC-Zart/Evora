@@ -67,6 +67,7 @@ export async function ensureWeeksClosed(
   s: AthleteState,
   opts: { now?: Date; useAi?: boolean; push?: boolean } = {},
 ): Promise<ClosedWeek[]> {
+  if (!s.planoIniciado) return [];
   const now = opts.now ?? new Date();
   const fechadas = new Set(s.closures.map((c) => c.semana_calendario));
   const out: ClosedWeek[] = [];

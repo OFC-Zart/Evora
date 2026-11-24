@@ -29,6 +29,7 @@ import { WorkoutDetail } from "@/components/workout-detail";
 import { CoachCard } from "@/components/coach-card";
 import { LightWeekButton, SpikeBanner } from "@/components/action-buttons";
 import { NoProfile } from "@/components/no-profile";
+import { ComecarPlanoButton } from "@/components/comecar-plano";
 import { MODO_LABEL } from "@/lib/content";
 import { tipoCor } from "@/lib/ui/colors";
 
@@ -51,6 +52,81 @@ export default async function Hoje() {
   const { supabase, s } = ctx;
   const { hoje, athlete, profile } = s;
   const primeiroNome = profile.nome.split(" ")[0];
+
+  // plano ainda não começou: só a tela de boas-vindas com o botão "Começar"
+  if (!s.planoIniciado) {
+    let primeiro: ScheduledWorkout | undefined;
+    for (let d = 0; d <= 7 && !primeiro; d++) primeiro = workoutsOnDate(s.plan, s.schedule, addDays(hoje, d), hoje, athlete, s.overrides)[0];
+    const porSemana = s.seed.treinos.filter((w) => w.semana === 2 && !w.opcional).length;
+    return (
+      <div className="space-y-4">
+        <header className="flex items-start justify-between gap-3 px-1">
+          <div>
+            <p className="text-sm text-muted">{formatDateLong(hoje)}</p>
+            <h1 className="mt-0.5 text-[32px] font-bold leading-tight tracking-tight">Oi, {primeiroNome}</h1>
+          </div>
+          <Image src="/icons/icon-192.png" alt="" width={44} height={44} className="mt-1 rounded-[24%]" priority />
+        </header>
+
+        <Card className="overflow-hidden p-0" style={{ background: "var(--hero)" }}>
+          <div className="h-1.5 bg-accent" aria-hidden />
+          <div className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Seu plano está pronto</p>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight">Meta: {s.seed.meta.descricao}</h2>
+
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-2xl bg-card-2 px-2 py-3">
+                <p className="num text-[22px] font-bold leading-none">8</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted">semanas</p>
+              </div>
+              <div className="rounded-2xl bg-card-2 px-2 py-3">
+                <p className="num text-[22px] font-bold leading-none">{porSemana}</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted">treinos/sem.</p>
+              </div>
+              <div className="rounded-2xl bg-card-2 px-2 py-3">
+                <p className="num text-[22px] font-bold leading-none">{formatNumber(s.seed.meta.distancia_km)}</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted">km no fim</p>
+              </div>
+            </div>
+
+            <ul className="mt-5 space-y-2.5 text-[15px]">
+              <li className="flex gap-3">
+                <span className="num flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink">1</span>
+                Toque em começar: hoje vira o dia 1 e os dias passam a contar.
+              </li>
+              <li className="flex gap-3">
+                <span className="num flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink">2</span>
+                Cada dia mostra o treino em passo a passo, com ritmo e sensação.
+              </li>
+              <li className="flex gap-3">
+                <span className="num flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink">3</span>
+                Terminou? Registre. O app ajusta os ritmos com o que você fez.
+              </li>
+            </ul>
+
+            {primeiro && (
+              <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+                <span>
+                  <span className="block text-xs text-muted">
+                    {primeiro.data === hoje ? "Seu primeiro treino, hoje" : `Seu primeiro treino: ${DIA_LABEL[primeiro.workout.dia].toLowerCase()}`}
+                  </span>
+                  <span className="mt-1 flex items-center gap-2">
+                    <TypeTag tipo={primeiro.workout.tipo} />
+                    {primeiro.km != null && <span className="num font-semibold">{formatNumber(primeiro.km)} km</span>}
+                  </span>
+                </span>
+              </div>
+            )}
+
+            <div className="mt-5">
+              <ComecarPlanoButton />
+            </div>
+            {athlete === "leticia" && <p className="mt-3 text-center text-xs text-muted">Antes de começar, faça um check-up médico.</p>}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const antesDoInicio = hoje < profile.plan_inicio;
   const semanaRow = s.schedule.find((w) => w.semana_calendario === s.semanaAtual);

@@ -93,7 +93,10 @@ export interface AthleteState {
   closures: ClosureRow[];
   coach: CoachRow[];
   hoje: string;
+  /** 0 enquanto o plano não foi iniciado. */
   semanaAtual: number;
+  /** false até a pessoa tocar em "Começar meu plano" (plan_inicio nulo no banco). */
+  planoIniciado: boolean;
 }
 
 export async function currentAthleteId(supabase: SupabaseClient): Promise<AthleteId | null> {
@@ -136,6 +139,9 @@ export async function loadState(supabase: SupabaseClient, athlete?: AthleteId): 
   for (const z of zones.data ?? []) (zonas as Record<string, number>)[z.zona] = z.pace_s_por_km;
 
   const hoje = isoDateInTz();
+  // sem início: o plano aparece como prévia a partir de hoje, mas nada conta
+  const planoIniciado = profile.plan_inicio != null;
+  if (!planoIniciado) profile.plan_inicio = hoje;
   return {
     athlete: id,
     profile: profile as ProfileRow,
@@ -151,7 +157,8 @@ export async function loadState(supabase: SupabaseClient, athlete?: AthleteId): 
     closures: (closures.data ?? []) as ClosureRow[],
     coach: (coach.data ?? []) as CoachRow[],
     hoje,
-    semanaAtual: calendarWeekOf(profile.plan_inicio, hoje),
+    semanaAtual: planoIniciado ? calendarWeekOf(profile.plan_inicio, hoje) : 0,
+    planoIniciado,
   };
 }
 

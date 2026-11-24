@@ -35,6 +35,12 @@ export default async function Plano() {
         </p>
       </header>
 
+      {!s.planoIniciado && (
+        <p className="mb-4 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-medium text-accent-ink">
+          Prévia do plano. As datas valem quando você tocar em <strong>Começar meu plano</strong> na tela Hoje.
+        </p>
+      )}
+
       <Accordion type="single" collapsible defaultValue={aberta} className="space-y-3">
         {semanas.map((w) => {
           const treinos = workoutsOfCalendarWeek(s.plan, s.schedule, w.semana_calendario, s.profile.plan_inicio, s.athlete, s.overrides);

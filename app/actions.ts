@@ -50,6 +50,19 @@ function revalidateAll() {
 const dataISO = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 // ---------------------------------------------------------------------------
+// Começar o plano: só a partir do toque em "Começar" os dias passam a contar
+// ---------------------------------------------------------------------------
+
+export async function comecarPlano(): Promise<Result> {
+  const { supabase, s } = await requireState();
+  if (s.planoIniciado) return { ok: false, erro: "Seu plano já começou." };
+  const { error } = await supabase.from("profiles").update({ plan_inicio: s.hoje, calibrado: false, bloqueio_dor: false }).eq("athlete_id", s.athlete);
+  if (error) return { ok: false, erro: "Não deu pra começar agora. Tenta de novo." };
+  revalidateAll();
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Registrar treino + autoajuste
 // ---------------------------------------------------------------------------
 

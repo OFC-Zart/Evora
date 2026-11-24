@@ -117,7 +117,9 @@ export function demoState(athlete: AthleteId = demoAthlete()): AthleteState {
       },
     ],
     hoje,
-    semanaAtual: calendarWeekOf(plan_inicio, hoje),
+    // EVORA_DEMO_INICIADO=0 mostra a tela de "Começar meu plano"
+    semanaAtual: process.env.EVORA_DEMO_INICIADO === "0" ? 0 : calendarWeekOf(plan_inicio, hoje),
+    planoIniciado: process.env.EVORA_DEMO_INICIADO !== "0",
   };
 }
 
