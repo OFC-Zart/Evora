@@ -207,6 +207,12 @@ create table if not exists public.week_closures (
   primary key (athlete_id, semana_calendario)
 );
 
+-- Permissões da Data API (não depende da opção "Grant API access" do painel).
+-- O acesso real a cada linha é decidido pelo RLS abaixo; o anon não recebe nada.
+grant usage on schema public to authenticated, service_role;
+grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
+revoke all on all tables in schema public from anon;
+
 -- ---------------------------------------------------------------------------
 -- RLS: cada atleta lê e escreve só o que é seu.
 -- ---------------------------------------------------------------------------
