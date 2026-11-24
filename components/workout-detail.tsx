@@ -115,6 +115,8 @@ function passos(segmentos: Segmento[], zonas: Zonas, athlete: AthleteId): Passo[
     if (i === 0 && !(aq > 0)) fase = temMiolo && facil(s) ? "Aquecimento" : "Comece";
     else if (i === n - 1 && temMiolo && facil(s)) fase = "Volta à calma";
     else if (temMiolo) fase = "Parte principal";
+    // bloco final só de acelerações curtas (100 m soltos + andando)
+    if (i > 0 && s.tipo === "repeticao" && s.blocos[0]?.zona === "solto" && s.blocos.every((b) => b.zona === "solto" || b.zona === "caminhada")) fase = "Acelerações";
 
     if (s.tipo === "forca") {
       out.push({ fase: "Circuito de força", itens: [], forca: s.voltas });

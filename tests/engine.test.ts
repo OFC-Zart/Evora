@@ -225,10 +225,10 @@ describe("tempos batem com a planilha do Excel", () => {
     expect(lines).toHaveLength(1);
     expect(lines[0].texto).toMatch(/Sem meta/);
   });
-  it("km totais do plano: Danilo 132,8 km e Letícia 77,3 km", () => {
+  it("km totais do plano: Danilo 132,8 km e Letícia 81,5 km (77,3 da planilha + acelerações da meta de 28:00)", () => {
     const soma = (a: "danilo" | "leticia") => Math.round(planOf(a).reduce((s, w) => s + (w.km_total ?? 0), 0) * 10) / 10;
     expect(soma("danilo")).toBe(132.8);
-    expect(soma("leticia")).toBe(77.3);
+    expect(soma("leticia")).toBe(81.5);
     expect(planOf("danilo")).toHaveLength(41);
     expect(planOf("leticia")).toHaveLength(39);
   });
