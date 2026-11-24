@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
 import { SwRegister } from "@/components/sw-register";
+import { Abertura, ABERTURA_SCRIPT } from "@/components/abertura";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -28,8 +29,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${geist.variable} ${geistMono.variable}`}>
+    <html lang="pt-BR" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: ABERTURA_SCRIPT }} />
+      </head>
       <body className="min-h-dvh">
+        <Abertura />
         {children}
         <Toaster position="top-center" richColors closeButton toastOptions={{ className: "!rounded-2xl" }} />
         <SwRegister />

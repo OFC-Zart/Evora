@@ -136,3 +136,8 @@ input[type="number"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* abertura: escondida antes da pintura quando já rodou nesta sessão */
+html[data-abertura="off"] #abertura {
+  display: none;
+}
