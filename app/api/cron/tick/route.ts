@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { loadState } from "@/lib/server/state";
 import { ensureWeeksClosed } from "@/lib/server/weeks";
 import { getCronSecret } from "@/lib/server/secrets";
+import { serviceRoleKey } from "@/lib/env";
 import { sendPushToAthlete } from "@/lib/server/push";
 
 export const runtime = "nodejs";
@@ -13,11 +14,16 @@ export const maxDuration = 60;
 
 async function authorized(req: NextRequest): Promise<boolean> {
   const secret = await getCronSecret();
-  if (!secret) return false;
+  if (!secret) {
+    console.error("[cron] sem segredo:", serviceRoleKey() ? "chave service role presente, leitura falhou" : "SUPABASE_SERVICE_ROLE_KEY ausente");
+    return false;
+  }
   const got = req.headers.get("x-cron-secret") ?? req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   const a = Buffer.from(got);
   const b = Buffer.from(secret);
-  return a.length === b.length && timingSafeEqual(a, b);
+  const ok = a.length === b.length && timingSafeEqual(a, b);
+  if (!ok) console.error(`[cron] segredo recebido não confere (tamanho ${a.length} vs ${b.length})`);
+  return ok;
 }
 
 // Chamado a cada minuto pelo pg_cron do Supabase (supabase/cron.sql).

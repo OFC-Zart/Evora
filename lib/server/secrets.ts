@@ -12,7 +12,8 @@ const cache = new Map<string, string>();
 async function lerSegredo(nome: string): Promise<string | null> {
   if (cache.has(nome)) return cache.get(nome)!;
   const admin = createAdminClient();
-  const { data } = await admin.from("app_secrets").select("valor").eq("nome", nome).maybeSingle();
+  const { data, error } = await admin.from("app_secrets").select("valor").eq("nome", nome).maybeSingle();
+  if (error) throw new Error(`app_secrets: ${error.message}`);
   if (data?.valor) cache.set(nome, data.valor);
   return data?.valor ?? null;
 }
@@ -47,7 +48,8 @@ export async function getCronSecret(): Promise<string | null> {
   if (process.env.CRON_SECRET) return process.env.CRON_SECRET;
   try {
     return await lerSegredo("cron_secret");
-  } catch {
+  } catch (e) {
+    console.error("[cron] não deu pra ler o cron_secret:", e instanceof Error ? e.message : e);
     return null;
   }
 }
