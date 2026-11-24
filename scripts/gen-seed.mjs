@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 const DIAS = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
 const args = process.argv.slice(2);
 const inicioArg = args[args.indexOf("--inicio") + 1];
-const PLAN_INICIO = args.includes("--inicio") ? inicioArg : "2026-11-23";
+const PLAN_INICIO = args.includes("--inicio") ? inicioArg : "2026-11-24";
 if (!/^\d{4}-\d{2}-\d{2}$/.test(PLAN_INICIO)) throw new Error("--inicio precisa ser YYYY-MM-DD");
 if (new Date(PLAN_INICIO + "T12:00:00Z").getUTCDay() !== 1) throw new Error("--inicio precisa ser uma segunda-feira");
 

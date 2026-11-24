@@ -88,7 +88,8 @@ export function workoutsOfCalendarWeek(
   return plan
     .filter((w) => w.semana === week.semana_plano)
     .sort((a, b) => a.ordem - b.ordem)
-    .map((w) => resolveWorkout(w, week, plan_inicio, athlete, overrides));
+    .map((w) => resolveWorkout(w, week, plan_inicio, athlete, overrides))
+    .filter((sw) => sw.data >= plan_inicio); // plano começando no meio da semana
 }
 
 export function workoutsOnDate(

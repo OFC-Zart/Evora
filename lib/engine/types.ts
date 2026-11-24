@@ -153,5 +153,5 @@ export interface Profile {
   idade?: number | null;
   fc_max?: number | null;
   fc_repouso?: number | null;
-  plan_inicio: string; // segunda-feira, YYYY-MM-DD
+  plan_inicio: string; // dia do primeiro treino (qualquer dia), YYYY-MM-DD
 }

@@ -56,14 +56,18 @@ export function mondayOf(iso: string): string {
   return addDays(iso, -idx);
 }
 
-/** Semana do calendário do plano (1-based). Antes do início retorna ≤ 0. */
+/**
+ * Semana do calendário do plano (1-based). Antes do início retorna ≤ 0.
+ * O plano pode começar em qualquer dia: as semanas contam da segunda-feira da
+ * semana do início, e os treinos antes do dia do início não existem.
+ */
 export function calendarWeekOf(plan_inicio: string, iso: string): number {
-  return Math.floor(daysBetween(plan_inicio, iso) / 7) + 1;
+  return Math.floor(daysBetween(mondayOf(plan_inicio), iso) / 7) + 1;
 }
 
 /** Intervalo [segunda, domingo] de uma semana do calendário do plano. */
 export function weekRange(plan_inicio: string, semana: number): { inicio: string; fim: string } {
-  const inicio = addDays(plan_inicio, (semana - 1) * 7);
+  const inicio = addDays(mondayOf(plan_inicio), (semana - 1) * 7);
   return { inicio, fim: addDays(inicio, 6) };
 }
 

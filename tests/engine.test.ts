@@ -454,3 +454,22 @@ describe("datas", () => {
     expect(calendarWeekOf("2026-11-23", "2026-11-30")).toBe(2);
   });
 });
+
+describe("plano começando no meio da semana", () => {
+  it("começa numa terça: a segunda some, a semana 1 vai até domingo", async () => {
+    const { workoutsOfCalendarWeek, workoutsOnDate, calendarWeekOf, weekRange } = await import("@/lib/engine");
+    const inicio = "2026-11-24"; // terça
+    const schedule = defaultSchedule();
+    expect(calendarWeekOf(inicio, "2026-11-24")).toBe(1);
+    expect(calendarWeekOf(inicio, "2026-11-29")).toBe(1);
+    expect(calendarWeekOf(inicio, "2026-11-30")).toBe(2);
+    expect(weekRange(inicio, 1)).toEqual({ inicio: "2026-11-23", fim: "2026-11-29" });
+    const s1 = workoutsOfCalendarWeek(DANILO.treinos, schedule, 1, inicio, "danilo");
+    expect(s1.map((w) => w.workout.dia)).toEqual(["ter", "qui", "sex", "sab"]);
+    expect(workoutsOnDate(DANILO.treinos, schedule, "2026-11-24", inicio, "danilo")[0].workout.tipo).toBe("Teste");
+    expect(workoutsOnDate(DANILO.treinos, schedule, "2026-11-23", inicio, "danilo")).toEqual([]);
+    const s2 = workoutsOfCalendarWeek(DANILO.treinos, schedule, 2, inicio, "danilo");
+    expect(s2[0].workout.dia).toBe("seg");
+    expect(s2[0].data).toBe("2026-11-30");
+  });
+});
