@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { DIA_CURTO, addDays, formatDateShort, plannedBetween } from "@/lib/engine";
 import { getPageContext } from "@/lib/server/page";
+import { getVapidKeys } from "@/lib/server/secrets";
+import { isDemo } from "@/lib/server/demo";
 import { Card, SectionTitle } from "@/components/ui/card";
 import { TypeTag } from "@/components/type-tag";
 import { NoProfile } from "@/components/no-profile";
@@ -27,6 +29,7 @@ export default async function Agenda() {
     .filter((p) => p.workout.tipo !== "Força")
     .map((p) => ({ id: p.workout.id, data: p.data, rotulo: `${DIA_CURTO[p.workout.dia]} ${formatDateShort(p.data)} · ${p.workout.tipo}` }));
   const nomeTreino = new Map(s.plan.map((w) => [w.id, w.tipo]));
+  const vapid = isDemo() ? null : await getVapidKeys();
 
   return (
     <div>
@@ -38,7 +41,7 @@ export default async function Agenda() {
         <p className="mt-1 text-sm text-muted">Marca a corrida e recebe o lembrete no celular.</p>
       </header>
 
-      <PushManager vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
+      <PushManager vapidKey={vapid?.publicKey ?? ""} />
 
       <SectionTitle>Marcar corrida</SectionTitle>
       <Card>

@@ -36,7 +36,7 @@ export function PushManager({ vapidKey }: { vapidKey: string }) {
   }, []);
 
   async function ativar() {
-    if (!vapidKey) return toast.error("Falta configurar NEXT_PUBLIC_VAPID_PUBLIC_KEY.");
+    if (!vapidKey) return toast.error("As chaves de notificação ainda não foram geradas. Recarregue a página.");
     setBusy(true);
     try {
       // a permissão só é pedida depois do toque da pessoa

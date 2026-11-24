@@ -1,13 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { publicEnv } from "@/lib/env";
 
 const PUBLIC_PATHS = ["/", "/entrar", "/auth"];
 
 // Renova a sessão do Supabase a cada navegação e protege as telas do app.
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const { supabaseUrl: url, supabaseAnonKey: key } = publicEnv();
   if (!url || !key) return response;
 
   const supabase = createServerClient(url, key, {

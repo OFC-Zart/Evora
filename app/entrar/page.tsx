@@ -12,10 +12,10 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-10">
       <Image src="/icons/icon-192.png" alt="Evora" width={64} height={64} priority className="mb-6 rounded-[26%]" />
       <h1 className="text-3xl font-semibold tracking-tight">Entrar</h1>
-      <p className="mt-2 text-muted">Só Danilo e Letícia têm conta.</p>
+      <p className="mt-2 text-muted">Use seu nome de usuário e a senha.</p>
       {!isSupabaseConfigured() && (
         <p className="mt-6 rounded-2xl bg-card-2 p-4 text-sm">
-          Supabase ainda não configurado: defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY (veja o SETUP.md).
+          O app ainda não está ligado ao banco de dados. Veja o SETUP.md.
         </p>
       )}
       {sp.erro === "link" && <p className="mt-6 rounded-2xl bg-card-2 p-4 text-sm text-danger">O link expirou ou já foi usado. Pede outro.</p>}

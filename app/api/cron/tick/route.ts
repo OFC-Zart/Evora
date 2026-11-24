@@ -4,14 +4,15 @@ import { dayKey, isoDateInTz, timeInTz, workoutsOnDate, type AthleteId } from "@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { loadState } from "@/lib/server/state";
 import { ensureWeeksClosed } from "@/lib/server/weeks";
+import { getCronSecret } from "@/lib/server/secrets";
 import { sendPushToAthlete } from "@/lib/server/push";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+async function authorized(req: NextRequest): Promise<boolean> {
+  const secret = await getCronSecret();
   if (!secret) return false;
   const got = req.headers.get("x-cron-secret") ?? req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   const a = Buffer.from(got);
@@ -24,7 +25,7 @@ function authorized(req: NextRequest): boolean {
 //  2) lembrete diário do "treino de hoje" no horário escolhido;
 //  3) fechamento da semana no domingo a partir das 20h.
 export async function POST(req: NextRequest) {
-  if (!authorized(req)) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!(await authorized(req))) return NextResponse.json({ ok: false }, { status: 401 });
   const admin = createAdminClient();
   const agora = new Date();
   const hoje = isoDateInTz(agora);

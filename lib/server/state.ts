@@ -36,6 +36,8 @@ export interface ProfileRow {
   lembrete_diario_ultimo: string | null;
   notif_ajustes: boolean;
   notif_semana: boolean;
+  trocar_senha?: boolean;
+  precisa_email?: boolean;
 }
 
 export interface GoalRow {

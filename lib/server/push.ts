@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as webpush from "web-push";
+import { getVapidKeys, vapidSubject } from "./secrets";
 
 export interface PushPayload {
   title: string;
@@ -10,13 +11,11 @@ export interface PushPayload {
 }
 
 let configured = false;
-function configure(): boolean {
+async function configure(): Promise<boolean> {
   if (configured) return true;
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT;
-  if (!pub || !priv || !subject) return false;
-  webpush.setVapidDetails(subject, pub, priv);
+  const keys = await getVapidKeys();
+  if (!keys) return false;
+  webpush.setVapidDetails(vapidSubject(), keys.publicKey, keys.privateKey);
   configured = true;
   return true;
 }
@@ -26,7 +25,7 @@ function configure(): boolean {
  * 404 ou 410 (inscrição expirada) são apagados.
  */
 export async function sendPushToAthlete(supabase: SupabaseClient, athlete: string, payload: PushPayload): Promise<number> {
-  if (!configure()) return 0;
+  if (!(await configure())) return 0;
   const { data: subs } = await supabase.from("push_subscriptions").select("*").eq("athlete_id", athlete);
   let enviados = 0;
   for (const s of subs ?? []) {
