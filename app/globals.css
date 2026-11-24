@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
-/* Tokens. Tema claro e escuro seguem o sistema. Uma cor de destaque (verde-limão)
-   e o resto neutro. Cada tipo de treino tem uma cor fixa. */
+/* Tokens. Tema claro e escuro seguem o sistema. Destaque = vermelho da marca
+   Evora (logo), o resto neutro. Cada tipo de treino tem uma cor fixa. */
 :root {
-  --bg: #f5f6f3;
+  --bg: #f4f4f5;
   --card: #ffffff;
-  --card-2: #f0f2ee;
-  --fg: #101411;
-  --muted: #5a625d;
-  --border: #e2e5e0;
-  --ring: #65a30d;
+  --card-2: #f1f1f3;
+  --fg: #0c0c0e;
+  --muted: #5f5f68;
+  --border: #e4e4e8;
+  --ring: #e11d2e;
 
-  --accent: #b5ef3b; /* verde-limão: fundo de botão (texto escuro por cima) */
-  --accent-fg: #142004;
-  --accent-ink: #3f6212; /* texto de destaque sobre fundo claro (AA) */
-  --accent-soft: #eef9d6;
+  --accent: #e11d2e; /* vermelho da marca: fundo de botão (texto branco por cima) */
+  --accent-fg: #ffffff;
+  --accent-ink: #b4141f; /* texto de destaque sobre fundo claro (AA) */
+  --accent-soft: #fde9eb;
+  --hero: linear-gradient(160deg, #ffffff 0%, #fff4f5 100%);
 
-  --danger: #c0262d;
+  --danger: #c2410c;
   --warn: #b45309;
   --ok: #15803d;
 
@@ -38,16 +39,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a0c0b;
-    --card: #131715;
-    --card-2: #1a1f1c;
-    --fg: #eef2ee;
-    --muted: #9ba49f;
-    --border: #252b28;
-    --ring: #bef264;
-    --accent-ink: #c5f26a;
-    --accent-soft: #1d2a0c;
-    --danger: #f87171;
+    --bg: #070708;
+    --card: #111114;
+    --card-2: #1a1a1f;
+    --fg: #f2f2f4;
+    --muted: #9d9da8;
+    --border: #25252c;
+    --ring: #ff3b4b;
+    --accent: #ec2233;
+    --accent-ink: #ff6b78;
+    --accent-soft: #2a0e12;
+    --hero: radial-gradient(120% 90% at 100% 0%, rgba(236, 34, 51, 0.16) 0%, transparent 55%), linear-gradient(180deg, #141418 0%, #0f0f12 100%);
+    --danger: #fb923c;
     --warn: #fbbf24;
     --ok: #4ade80;
 

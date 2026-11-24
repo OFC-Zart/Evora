@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, CalendarClock, ChevronRight, Moon, PartyPopper } from "lucide-react";
+import Image from "next/image";
+import { AlertTriangle, CalendarClock, Check, CheckCircle2, ChevronRight, Minus, Moon, PartyPopper, X } from "lucide-react";
 import {
   DIA_LABEL,
   addDays,
@@ -29,6 +30,18 @@ import { CoachCard } from "@/components/coach-card";
 import { LightWeekButton, SpikeBanner } from "@/components/action-buttons";
 import { NoProfile } from "@/components/no-profile";
 import { MODO_LABEL } from "@/lib/content";
+import { tipoCor } from "@/lib/ui/colors";
+
+/** Nome do treino em linguagem simples, para o título do card. */
+const TITULO: Record<string, string> = {
+  Leve: "Corrida leve",
+  Ritmo: "Treino de ritmo",
+  Regenerativo: "Corrida regenerativa",
+  Força: "Treino de força",
+  Teste: "Dia de teste",
+  "Corre/anda": "Corre e anda",
+  Corrida: "Corrida contínua",
+};
 
 export const metadata: Metadata = { title: "Hoje" };
 
@@ -65,15 +78,11 @@ export default async function Hoje() {
 
   // clima de hoje no horário de treino
   const temCorrida = treinosHoje.some((t) => isRunType(t.workout.tipo));
-  const clima = temCorrida && profile.lat != null && profile.lon != null ? await fetchWeather(Number(profile.lat), Number(profile.lon), hoje, profile.hora_treino ?? "07:00") : null;
+  const [clima, { data: agendadas }] = await Promise.all([
+    temCorrida && profile.lat != null && profile.lon != null ? fetchWeather(Number(profile.lat), Number(profile.lon), hoje, profile.hora_treino ?? "07:00") : Promise.resolve(null),
+    supabase.from("scheduled_runs").select("id, inicio, local").gte("inicio", new Date().toISOString()).order("inicio").limit(1),
+  ]);
   const calor = clima ? heatAdjustment(clima.temp_c, clima.orvalho_c) : null;
-
-  const { data: agendadas } = await supabase
-    .from("scheduled_runs")
-    .select("id, inicio, local")
-    .gte("inicio", new Date().toISOString())
-    .order("inicio")
-    .limit(1);
   const proximaAgendada = agendadas?.[0];
 
   const queda = detectDecline(s.logs, hoje);
@@ -82,14 +91,24 @@ export default async function Hoje() {
 
   return (
     <div className="space-y-4">
-      <header className="px-1">
-        <p className="text-sm text-muted">{formatDateLong(hoje)}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Oi, {primeiroNome}</h1>
-        {semanaRow && (
-          <p className="mt-1 text-sm text-muted">
-            Semana {semanaRow.semana_plano} de 8{MODO_LABEL[semanaRow.modo] ? ` · ${MODO_LABEL[semanaRow.modo]}` : ""}
-          </p>
-        )}
+      <header className="flex items-start justify-between gap-3 px-1">
+        <div>
+          <p className="text-sm text-muted">{formatDateLong(hoje)}</p>
+          <h1 className="mt-0.5 text-[32px] font-bold leading-tight tracking-tight">Oi, {primeiroNome}</h1>
+          {semanaRow && (
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted">
+                Semana {semanaRow.semana_plano} de 8{MODO_LABEL[semanaRow.modo] ? ` · ${MODO_LABEL[semanaRow.modo]}` : ""}
+              </span>
+              <span className="flex gap-0.5" aria-hidden>
+                {Array.from({ length: 8 }, (_, i) => (
+                  <span key={i} className={`h-1.5 w-3 rounded-full ${i < semanaRow.semana_plano ? "bg-accent" : "bg-border"}`} />
+                ))}
+              </span>
+            </div>
+          )}
+        </div>
+        <Image src="/icons/icon-192.png" alt="" width={44} height={44} className="mt-1 rounded-[24%]" priority />
       </header>
 
       {queda.ativo && (
@@ -150,10 +169,18 @@ export default async function Hoje() {
             {spike?.passa && (
               <SpikeBanner workoutId={t.workout.id} semana={t.semana_calendario} tipo={t.workout.tipo} planejado_km={spike.planejado_km} limite_km={spike.limite_km} maior_km={spike.maior_km} />
             )}
-            <Card className="p-5">
-              <div className="mb-4 flex items-center justify-between gap-2">
-                <TypeTag tipo={t.workout.tipo} />
-                {t.workout.opcional && <span className="text-xs font-medium text-muted">Opcional</span>}
+            <Card className="overflow-hidden p-0" style={{ background: "var(--hero)" }}>
+              <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${tipoCor(t.workout.tipo)}, transparent)` }} aria-hidden />
+              <div className="p-5">
+              <div className="mb-4 flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted">Treino de hoje</p>
+                  <h2 className="mt-1 text-2xl font-bold tracking-tight">{TITULO[t.workout.tipo] ?? t.workout.tipo}</h2>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <TypeTag tipo={t.workout.tipo} />
+                  {t.workout.opcional && <span className="text-xs font-medium text-muted">Opcional</span>}
+                </div>
               </div>
               <WorkoutDetail sw={t} zonas={s.zonas} athlete={athlete} seed={s.seed} calorPct={calor && calor.pct >= 1 ? calor.pct : 0} />
               {calor && clima && (
@@ -164,14 +191,16 @@ export default async function Hoje() {
               )}
               <div className="mt-5">
                 {log ? (
-                  <p className="rounded-xl bg-accent-soft px-4 py-3 text-sm font-medium text-accent-ink">
-                    {st === "feito" ? "Treino feito ✓" : st === "parcial" ? "Feito em parte" : "Registrado como não feito"}
+                  <p className="flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold text-accent-ink">
+                    <CheckCircle2 className="h-5 w-5" />
+                    {st === "feito" ? "Treino feito. Mandou bem!" : st === "parcial" ? "Feito em parte" : "Registrado como não feito"}
                   </p>
                 ) : (
-                  <Link href={`/registrar?treino=${t.workout.id}&semana=${t.semana_calendario}`} className={buttonVariants({ size: "lg", block: true })}>
-                    Registrar este treino
+                  <Link href={`/registrar?treino=${t.workout.id}&semana=${t.semana_calendario}`} className={buttonVariants({ size: "lg", block: true, className: "shadow-lg shadow-accent/25" })}>
+                    Terminei, registrar treino
                   </Link>
                 )}
+              </div>
               </div>
             </Card>
           </div>
@@ -225,20 +254,34 @@ export default async function Hoje() {
                 <p className="text-sm text-muted">corridos</p>
               </div>
             </div>
-            <div className="mt-4 flex gap-1.5" aria-label="Treinos da semana">
+            <div className="mt-5 flex justify-between gap-1" aria-label="Treinos da semana">
               {semana.map((w) => {
                 const st = statusOf(w, s.logs, hoje);
+                const Icone = st === "feito" ? Check : st === "parcial" ? Minus : st === "pulado" ? X : null;
                 return (
                   <Link
                     key={w.workout.id}
                     href={`/plano/${w.workout.id}?semana=${w.semana_calendario}`}
-                    className="flex-1"
+                    className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
                     title={`${DIA_LABEL[w.workout.dia]}: ${w.workout.tipo}`}
                   >
+                    <span className="text-[11px] font-medium uppercase text-muted">{w.workout.dia}</span>
                     <span
-                      className={`block h-2.5 rounded-full ${st === "feito" ? "bg-accent" : st === "parcial" ? "bg-accent/50" : st === "pulado" ? "bg-danger/60" : st === "hoje" ? "bg-fg" : "bg-card-2"}`}
-                    />
-                    <span className="mt-1 block text-center text-[10px] text-muted">{w.workout.dia}</span>
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                        st === "feito"
+                          ? "border-accent bg-accent text-accent-fg"
+                          : st === "parcial"
+                            ? "border-accent text-accent-ink"
+                            : st === "pulado"
+                              ? "border-border text-muted"
+                              : st === "hoje"
+                                ? "border-fg"
+                                : "border-border"
+                      }`}
+                    >
+                      {Icone ? <Icone className="h-4 w-4" strokeWidth={3} /> : <span className="h-2 w-2 rounded-full" style={{ backgroundColor: tipoCor(w.workout.tipo) }} />}
+                    </span>
+                    <span className="max-w-full truncate text-[10px] text-muted">{w.workout.tipo}</span>
                   </Link>
                 );
               })}

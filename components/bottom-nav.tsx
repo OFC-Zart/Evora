@@ -25,7 +25,7 @@ export function BottomNav() {
                 <Link
                   href={href}
                   aria-label={label}
-                  className="-mt-6 mb-1 flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg shadow-black/20 ring-4 ring-bg transition active:scale-95"
+                  className="-mt-6 mb-1 flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg shadow-accent/40 ring-4 ring-bg transition active:scale-95"
                 >
                   <Icon className="h-8 w-8" strokeWidth={2.5} />
                 </Link>

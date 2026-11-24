@@ -19,11 +19,10 @@ export async function getPageContext(): Promise<PageContext | { semPerfil: true 
   if (!isSupabaseConfigured() && isDemo()) return { supabase: demoSupabase(), s: demoState() };
   if (!isSupabaseConfigured()) redirect("/entrar");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/entrar");
-  const s = await loadState(supabase);
+  // getClaims confere o JWT localmente (chaves assimétricas); o proxy já renovou a sessão.
+  // O perfil vem junto com o resto numa única ida ao banco.
+  const [{ data: auth }, s] = await Promise.all([supabase.auth.getClaims(), loadState(supabase)]);
+  if (!auth?.claims?.sub) redirect("/entrar");
   if (!s) return { semPerfil: true };
   // primeiro acesso: troca a senha provisória (e cadastra o e-mail real) antes de tudo
   if (s.profile.trocar_senha || s.profile.precisa_email) redirect("/primeiro-acesso");

@@ -101,25 +101,35 @@ export async function currentAthleteId(supabase: SupabaseClient): Promise<Athlet
   return (data?.athlete_id as AthleteId) ?? null;
 }
 
-/** Carrega tudo de um atleta. Com o cliente do usuário o RLS garante que é o próprio. */
+/**
+ * Carrega tudo de um atleta numa única ida ao banco (todas as consultas em
+ * paralelo). Com o cliente do usuário (sem `athlete`) o RLS já limita as
+ * tabelas próprias ao atleta logado; plano e agenda do plano são legíveis por
+ * todos, então vêm dos dois atletas e são filtrados aqui. Com o cliente admin
+ * (agendador) é obrigatório passar `athlete`.
+ */
 export async function loadState(supabase: SupabaseClient, athlete?: AthleteId): Promise<AthleteState | null> {
-  const profileQ = supabase.from("profiles").select("*");
-  const { data: profile } = athlete ? await profileQ.eq("athlete_id", athlete).maybeSingle() : await profileQ.maybeSingle();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const doAtleta = <Q,>(q: Q): Q => (athlete ? (q as any).eq("athlete_id", athlete) : q);
+  const [prof, plan, schedule, overrides, zones, history, logs, estimates, goals, closures, coach] = await Promise.all([
+    doAtleta(supabase.from("profiles").select("*")).maybeSingle(),
+    doAtleta(supabase.from("plan_workouts").select("*")).order("semana").order("ordem"),
+    doAtleta(supabase.from("plan_schedule").select("*")).order("semana_calendario"),
+    doAtleta(supabase.from("plan_overrides").select("*")),
+    doAtleta(supabase.from("zones").select("*")),
+    doAtleta(supabase.from("zone_history").select("*")).order("created_at", { ascending: true }),
+    doAtleta(supabase.from("workout_logs").select("*")).order("data", { ascending: true }).order("created_at", { ascending: true }),
+    doAtleta(supabase.from("estimates").select("*")).order("data", { ascending: true }),
+    doAtleta(supabase.from("goals").select("*")).order("created_at", { ascending: false }),
+    doAtleta(supabase.from("week_closures").select("*")).order("semana_calendario"),
+    doAtleta(supabase.from("coach_messages").select("*")).order("created_at", { ascending: false }).limit(10),
+  ]);
+  const profile = prof.data;
   if (!profile) return null;
   const id = profile.athlete_id as AthleteId;
-
-  const [plan, schedule, overrides, zones, history, logs, estimates, goals, closures, coach] = await Promise.all([
-    supabase.from("plan_workouts").select("*").eq("athlete_id", id).order("semana").order("ordem"),
-    supabase.from("plan_schedule").select("*").eq("athlete_id", id).order("semana_calendario"),
-    supabase.from("plan_overrides").select("*").eq("athlete_id", id),
-    supabase.from("zones").select("*").eq("athlete_id", id),
-    supabase.from("zone_history").select("*").eq("athlete_id", id).order("created_at", { ascending: true }),
-    supabase.from("workout_logs").select("*").eq("athlete_id", id).order("data", { ascending: true }).order("created_at", { ascending: true }),
-    supabase.from("estimates").select("*").eq("athlete_id", id).order("data", { ascending: true }),
-    supabase.from("goals").select("*").eq("athlete_id", id).order("created_at", { ascending: false }),
-    supabase.from("week_closures").select("*").eq("athlete_id", id).order("semana_calendario"),
-    supabase.from("coach_messages").select("*").eq("athlete_id", id).order("created_at", { ascending: false }).limit(10),
-  ]);
+  const meu = <T extends { athlete_id?: string }>(rows: T[] | null): T[] => (rows ?? []).filter((r) => r.athlete_id === id);
+  plan.data = meu(plan.data);
+  schedule.data = meu(schedule.data);
 
   const seed = ATHLETES[id];
   const zonas: Zonas = { ...seed.zonasIniciais };
