@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { APP_NAME, APP_TAGLINE } from "@/lib/env";
-import { IconArt } from "@/lib/ui/icon-art";
+import Image from "next/image";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function Inicio() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-between px-6 pb-10 pt-[18vh]">
       <div>
-        <IconArt size={72} />
+        <Image src="/icons/icon-512.png" alt="Evora" width={112} height={112} priority className="rounded-[26%] shadow-xl shadow-black/30" />
         <h1 className="mt-8 text-5xl font-semibold tracking-tight">{APP_NAME}</h1>
         <p className="mt-3 text-xl text-muted">{APP_TAGLINE}</p>
         <ul className="mt-10 space-y-3 text-[15px] text-muted">

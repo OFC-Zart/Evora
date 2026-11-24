@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { LoginForm } from "./login-form";
 import { isSupabaseConfigured } from "@/lib/env";
 
@@ -9,6 +10,7 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
   const next = sp.next && sp.next.startsWith("/") && !sp.next.startsWith("//") ? sp.next : "/hoje";
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-10">
+      <Image src="/icons/icon-192.png" alt="Evora" width={64} height={64} priority className="mb-6 rounded-[26%]" />
       <h1 className="text-3xl font-semibold tracking-tight">Entrar</h1>
       <p className="mt-2 text-muted">Só Danilo e Letícia têm conta.</p>
       {!isSupabaseConfigured() && (

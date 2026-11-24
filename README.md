@@ -16,6 +16,7 @@ Para colocar no ar: **[SETUP.md](SETUP.md)**.
 | `app/api/` | `coach` (Pedir análise) e `cron/tick` (chamado pelo pg_cron) |
 | `supabase/` | Esquema + RLS + views, seed gerado dos planos, agendador |
 | `data/planos.json` | Os dois planos (mesmos dados das planilhas) |
+| `data/brand/` | Logo original; `npm run icons` gera todos os ícones (sem a borda preta) |
 | `tests/engine.test.ts` | 44 testes, incluindo os 6 obrigatórios do briefing |
 
 ## Cálculos e fontes
